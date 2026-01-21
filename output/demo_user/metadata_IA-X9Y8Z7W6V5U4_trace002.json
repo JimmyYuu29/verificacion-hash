@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "trace_id": "550e8400-e29b-41d4-a716-446655440002",
+  "hash_info": {
+    "hash_code": "IA-X9Y8Z7W6V5U4",
+    "algorithm": "SHA-256",
+    "content_hash": "a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
+    "metadata_hash": "6dcd4ce23d88e2ee9568ba546c007c63d9131c1b",
+    "combined_hash": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+    "file_size": 125890
+  },
+  "document_info": {
+    "type": "informe_auditoria",
+    "type_display": "Informe de Auditoria",
+    "file_name": "Informe_Auditoria_TechCorp_2025.pdf",
+    "creation_timestamp": "15/01/2026 10:15:30",
+    "creation_timestamp_iso": "2026-01-15T10:15:30.456789"
+  },
+  "user_info": {
+    "user_id": "demo_user",
+    "client_name": "TechCorp Innovations S.A."
+  },
+  "form_data": {
+    "Nombre_Cliente": "TechCorp Innovations S.A.",
+    "Direccion_Oficina": "Avenida de la Tecnologia 456",
+    "Ciudad": "Barcelona",
+    "Codigo_Postal": "08019",
+    "Fecha_de_hoy": "15/01/2026",
+    "Ejercicio_Fiscal": "2025",
+    "Fecha_Cierre": "31/12/2025",
+    "Tipo_Opinion": "Favorable",
+    "Auditor_Principal": "Maria Lopez Fernandez",
+    "Numero_Registro": "ROAC-12345"
+  },
+  "verification_instructions": {
+    "es": "Para verificar este documento, use el codigo de hash en el verificador oficial de Forvis Mazars.",
+    "en": "To verify this document, use the hash code in the official Forvis Mazars verifier."
+  }
+}

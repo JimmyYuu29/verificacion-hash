@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "trace_id": "550e8400-e29b-41d4-a716-446655440001",
+  "hash_info": {
+    "hash_code": "CM-A1B2C3D4E5F6",
+    "algorithm": "SHA-256",
+    "content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "metadata_hash": "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592",
+    "combined_hash": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+    "file_size": 45678
+  },
+  "document_info": {
+    "type": "carta_manifestacion",
+    "type_display": "Carta de Manifestacion",
+    "file_name": "Carta_Manifestacion_EmpresaABC_20260121.docx",
+    "creation_timestamp": "21/01/2026 14:30:45",
+    "creation_timestamp_iso": "2026-01-21T14:30:45.123456"
+  },
+  "user_info": {
+    "user_id": "demo_user",
+    "client_name": "Empresa ABC S.L."
+  },
+  "form_data": {
+    "Nombre_Cliente": "Empresa ABC S.L.",
+    "Direccion_Oficina": "Calle Gran Via 123, Planta 5",
+    "Ciudad": "Madrid",
+    "Codigo_Postal": "28001",
+    "Fecha_de_hoy": "21/01/2026",
+    "Ejercicio_Fiscal": "2025",
+    "Fecha_Cierre": "31/12/2025",
+    "Representante_Legal": "Juan Garcia Martinez",
+    "Cargo": "Director General",
+    "NIF_Cliente": "B12345678"
+  },
+  "verification_instructions": {
+    "es": "Para verificar este documento, use el codigo de hash en el verificador oficial de Forvis Mazars.",
+    "en": "To verify this document, use the hash code in the official Forvis Mazars verifier."
+  }
+}

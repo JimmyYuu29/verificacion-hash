@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "trace_id": "550e8400-e29b-41d4-a716-446655440003",
+  "hash_info": {
+    "hash_code": "CE-Q1W2E3R4T5Y6",
+    "algorithm": "SHA-256",
+    "content_hash": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+    "metadata_hash": "486ea46224d1bb4fb680f34f7c9ad96a8f24ec88be73ea8e5a6c65260e9cb8a7",
+    "combined_hash": "3fdba35f04dc8c462986c992bcf875546257113072a909c162f7e470e581e278",
+    "file_size": 78234
+  },
+  "document_info": {
+    "type": "carta_encargo",
+    "type_display": "Carta de Encargo",
+    "file_name": "Carta_Encargo_GlobalServices_2026.docx",
+    "creation_timestamp": "10/01/2026 09:00:00",
+    "creation_timestamp_iso": "2026-01-10T09:00:00.000000"
+  },
+  "user_info": {
+    "user_id": "audit_team",
+    "client_name": "Global Services International"
+  },
+  "form_data": {
+    "Nombre_Cliente": "Global Services International",
+    "Direccion_Oficina": "Plaza de Espana 10",
+    "Ciudad": "Sevilla",
+    "Codigo_Postal": "41001",
+    "Fecha_de_hoy": "10/01/2026",
+    "Ejercicio_Fiscal": "2026",
+    "Fecha_Inicio_Auditoria": "01/02/2026",
+    "Fecha_Fin_Auditoria": "31/03/2026",
+    "Honorarios": "25000 EUR",
+    "Socio_Responsable": "Carlos Rodriguez Sanchez"
+  },
+  "verification_instructions": {
+    "es": "Para verificar este documento, use el codigo de hash en el verificador oficial de Forvis Mazars.",
+    "en": "To verify this document, use the hash code in the official Forvis Mazars verifier."
+  }
+}
