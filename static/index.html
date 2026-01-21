@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FORVIS MAZARS - Document Hash Verifier</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>FORVIS MAZARS</h1>
+                <span class="subtitle">Document Hash Verifier</span>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">
+                <span class="theme-icon">&#9790;</span>
+            </button>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Search Section -->
+            <section class="search-section">
+                <h2>Verificar Documento / Verify Document</h2>
+                <p class="description">
+                    Introduzca el codigo hash que se encuentra en el pie de pagina del documento PDF para verificar su autenticidad.
+                    <br>
+                    <em>Enter the hash code found in the PDF footer to verify document authenticity.</em>
+                </p>
+
+                <div class="search-box">
+                    <label for="hashInput">Hash Code:</label>
+                    <div class="input-group">
+                        <input
+                            type="text"
+                            id="hashInput"
+                            placeholder="CM-A1B2C3D4E5F6"
+                            maxlength="15"
+                            autocomplete="off"
+                        >
+                        <button class="btn btn-primary" onclick="verifyHash()">
+                            VERIFY
+                        </button>
+                    </div>
+                    <small class="hint">Formato / Format: XX-XXXXXXXXXXXX (ej: CM-A1B2C3D4E5F6)</small>
+                </div>
+
+                <!-- Document Type Info -->
+                <div class="type-info">
+                    <strong>Tipos de Documento / Document Types:</strong>
+                    <ul class="type-list">
+                        <li><code>CM</code> - Carta de Manifestacion</li>
+                        <li><code>IA</code> - Informe de Auditoria</li>
+                        <li><code>CE</code> - Carta de Encargo</li>
+                        <li><code>IR</code> - Informe de Revision</li>
+                        <li><code>OT</code> - Otros Documentos</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Integrity Check Section -->
+            <section class="integrity-section">
+                <h3>Verificacion de Integridad / Integrity Check</h3>
+                <p class="description">
+                    Suba el archivo PDF original para verificar que no ha sido modificado.
+                    <br>
+                    <em>Upload the original PDF file to verify it has not been modified.</em>
+                </p>
+
+                <div class="upload-box">
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                        <span class="upload-icon">&#128196;</span>
+                        <p>Haga clic o arrastre un archivo PDF aqui</p>
+                        <p><em>Click or drag a PDF file here</em></p>
+                        <input type="file" id="fileInput" accept=".pdf" hidden onchange="handleFileSelect(event)">
+                    </div>
+                    <div id="selectedFile" class="selected-file" style="display: none;"></div>
+                    <button class="btn btn-secondary" onclick="verifyIntegrity()" id="verifyIntegrityBtn" disabled>
+                        VERIFY INTEGRITY
+                    </button>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <div id="resultsContent"></div>
+            </section>
+
+            <!-- Statistics Section -->
+            <section class="stats-section">
+                <h3>Estadisticas / Statistics</h3>
+                <button class="btn btn-outline" onclick="loadStats()">
+                    Ver Estadisticas / View Statistics
+                </button>
+                <div id="statsContent" class="stats-content" style="display: none;"></div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 FORVIS MAZARS - Hash Verification System v1.0</p>
+            <p class="footer-note">
+                Para verificar este documento, use el codigo de hash en el verificador oficial.
+            </p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Verificando... / Verifying...</p>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
