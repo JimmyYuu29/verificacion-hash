@@ -3,6 +3,7 @@
   "trace_id": "550e8400-e29b-41d4-a716-446655440001",
   "hash_info": {
     "hash_code": "CM-A1B2C3D4E5F6",
+    "short_code": "ABCDEF",
     "algorithm": "SHA-256",
     "content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "metadata_hash": "d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592",
