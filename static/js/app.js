@@ -49,10 +49,12 @@ async function verifyHash() {
         return;
     }
 
-    // Validate format
-    const hashPattern = /^[A-Z]{2}-[A-Z0-9]{12}$/;
-    if (!hashPattern.test(hashCode)) {
-        showError('Formato de hash invalido. Use: XX-XXXXXXXXXXXX / Invalid hash format. Use: XX-XXXXXXXXXXXX');
+    // Validate format - accept both full hash and short code
+    const fullHashPattern = /^[A-Z]{2}-[A-Z0-9]{12}$/;
+    const shortCodePattern = /^[A-Z0-9]{6}$/;
+
+    if (!fullHashPattern.test(hashCode) && !shortCodePattern.test(hashCode)) {
+        showError('Formato invalido. Use: XX-XXXXXXXXXXXX (completo) o XXXXXX (codigo corto) / Invalid format. Use: XX-XXXXXXXXXXXX (full) or XXXXXX (short code)');
         return;
     }
 
@@ -216,8 +218,12 @@ function showResults(metadata) {
                 <div class="value">${escapeHtml(docInfo.type_display || 'N/A')}</div>
             </div>
             <div class="result-card">
-                <h4>Codigo Hash / Hash Code</h4>
+                <h4>Codigo Hash Completo / Full Hash Code</h4>
                 <div class="value mono">${escapeHtml(hashInfo.hash_code || 'N/A')}</div>
+            </div>
+            <div class="result-card">
+                <h4>Codigo Corto / Short Code</h4>
+                <div class="value mono">${escapeHtml(hashInfo.short_code || 'N/A')}</div>
             </div>
             <div class="result-card">
                 <h4>Fecha de Creacion / Creation Date</h4>
@@ -357,6 +363,10 @@ function showResultsHTML(metadata) {
                 <div class="value mono">${escapeHtml(hashInfo.hash_code || 'N/A')}</div>
             </div>
             <div class="result-card">
+                <h4>Codigo Corto</h4>
+                <div class="value mono">${escapeHtml(hashInfo.short_code || 'N/A')}</div>
+            </div>
+            <div class="result-card">
                 <h4>Cliente</h4>
                 <div class="value">${escapeHtml(userInfo.client_name || 'N/A')}</div>
             </div>
@@ -463,9 +473,10 @@ function showStats(stats) {
                 <ul class="stats-list">
         `;
         for (const doc of stats.recent_documents) {
+            const shortCode = doc.short_code ? ` (${escapeHtml(doc.short_code)})` : '';
             html += `
                 <li style="flex-direction: column; align-items: flex-start;">
-                    <span class="mono">${escapeHtml(doc.hash_code)}</span>
+                    <span class="mono">${escapeHtml(doc.hash_code)}${shortCode}</span>
                     <small style="color: var(--text-muted);">${escapeHtml(doc.document_type)} - ${escapeHtml(doc.client_name)}</small>
                 </li>
             `;
@@ -536,8 +547,12 @@ function printCertificate() {
                     <value>${escapeHtml(docInfo.type_display || 'N/A')}</value>
                 </div>
                 <div class="field">
-                    <label>Hash Code:</label>
+                    <label>Hash Code (Full):</label>
                     <value class="hash">${escapeHtml(hashInfo.hash_code || 'N/A')}</value>
+                </div>
+                <div class="field">
+                    <label>Short Code (Codigo Corto):</label>
+                    <value class="hash">${escapeHtml(hashInfo.short_code || 'N/A')}</value>
                 </div>
                 <div class="field">
                     <label>Creation Date:</label>

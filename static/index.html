@@ -25,18 +25,18 @@
             <section class="search-section">
                 <h2>Verificar Documento / Verify Document</h2>
                 <p class="description">
-                    Introduzca el codigo hash que se encuentra en el pie de pagina del documento PDF para verificar su autenticidad.
+                    Introduzca el codigo hash completo o el codigo corto (6 caracteres) que se encuentra en el pie de pagina del documento PDF para verificar su autenticidad.
                     <br>
-                    <em>Enter the hash code found in the PDF footer to verify document authenticity.</em>
+                    <em>Enter the full hash code or short code (6 characters) found in the PDF footer to verify document authenticity.</em>
                 </p>
 
                 <div class="search-box">
-                    <label for="hashInput">Hash Code:</label>
+                    <label for="hashInput">Hash Code / Codigo Corto:</label>
                     <div class="input-group">
                         <input
                             type="text"
                             id="hashInput"
-                            placeholder="CM-A1B2C3D4E5F6"
+                            placeholder="CM-A1B2C3D4E5F6 o ABCDEF"
                             maxlength="15"
                             autocomplete="off"
                         >
@@ -44,7 +44,10 @@
                             VERIFY
                         </button>
                     </div>
-                    <small class="hint">Formato / Format: XX-XXXXXXXXXXXX (ej: CM-A1B2C3D4E5F6)</small>
+                    <small class="hint">
+                        Formato completo / Full format: XX-XXXXXXXXXXXX (ej: CM-A1B2C3D4E5F6)<br>
+                        Codigo corto / Short code: XXXXXX (ej: ABCDEF)
+                    </small>
                 </div>
 
                 <!-- Document Type Info -->

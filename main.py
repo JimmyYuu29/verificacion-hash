@@ -28,8 +28,11 @@ DOCUMENT_TYPES = {
     "OT": {"code": "otros", "display": "Otros Documentos"}
 }
 
-# Hash code pattern: XX-XXXXXXXXXXXX (2 letters, dash, 12 alphanumeric)
+# Hash code patterns
+# Full hash: XX-XXXXXXXXXXXX (2 letters, dash, 12 alphanumeric)
 HASH_PATTERN = re.compile(r'^[A-Z]{2}-[A-Z0-9]{12}$', re.IGNORECASE)
+# Short code (codigo hash comprimido): 6 alphanumeric characters
+SHORT_CODE_PATTERN = re.compile(r'^[A-Z0-9]{6}$', re.IGNORECASE)
 
 app = FastAPI(
     title="Hash Verifier API",
@@ -71,8 +74,43 @@ class StatsResult(BaseModel):
 
 # Core functions
 def validate_hash_format(hash_code: str) -> bool:
-    """Validate hash code format."""
+    """Validate full hash code format (XX-XXXXXXXXXXXX)."""
     return bool(HASH_PATTERN.match(hash_code.upper()))
+
+
+def validate_short_code_format(short_code: str) -> bool:
+    """Validate compressed short code format (6 alphanumeric characters)."""
+    return bool(SHORT_CODE_PATTERN.match(short_code.upper()))
+
+
+def generate_short_code(hash_code: str) -> str:
+    """
+    Generate a compressed short code from a full hash code.
+
+    Takes every other character from the 12-character hash portion.
+    Example: CM-A1B2C3D4E5F6 -> A1B2C3 (positions 0,2,4,6,8,10 of the 12-char part)
+
+    Args:
+        hash_code: Full hash code (format: XX-XXXXXXXXXXXX)
+
+    Returns:
+        6-character short code
+    """
+    if not validate_hash_format(hash_code):
+        return ""
+
+    # Extract the 12-character portion after the prefix
+    hash_part = hash_code.upper().split('-')[1]
+
+    # Take characters at even positions (0, 2, 4, 6, 8, 10)
+    short_code = ''.join(hash_part[i] for i in range(0, 12, 2))
+
+    return short_code
+
+
+def is_short_code(code: str) -> bool:
+    """Check if the provided code is a short code (not a full hash)."""
+    return validate_short_code_format(code) and not validate_hash_format(code)
 
 
 def get_document_type(hash_code: str) -> Optional[Dict[str, str]]:
@@ -119,6 +157,54 @@ def search_by_hash(hash_code: str, output_dir: Path) -> Optional[Dict[str, Any]]
     return None
 
 
+def search_by_short_code(short_code: str, output_dir: Path) -> Optional[Dict[str, Any]]:
+    """
+    Search for document metadata by compressed short code.
+
+    The short code is generated from the full hash code by taking every other character
+    from the 12-character hash portion.
+
+    Args:
+        short_code: The 6-character short code to search for
+        output_dir: Path to the output directory containing user folders
+
+    Returns:
+        Metadata dictionary if found, None otherwise
+    """
+    short_code_upper = short_code.upper()
+
+    if not output_dir.exists():
+        return None
+
+    # Search through all user directories
+    for user_dir in output_dir.iterdir():
+        if not user_dir.is_dir():
+            continue
+
+        # Search through all metadata files in user directory
+        for metadata_file in user_dir.glob("metadata_*.json"):
+            try:
+                with open(metadata_file, "r", encoding="utf-8") as f:
+                    metadata = json.load(f)
+
+                stored_hash = metadata.get("hash_info", {}).get("hash_code", "")
+
+                # Check if stored short_code matches
+                stored_short_code = metadata.get("hash_info", {}).get("short_code", "")
+                if stored_short_code.upper() == short_code_upper:
+                    return metadata
+
+                # If no stored short_code, generate one from the full hash
+                if stored_hash and not stored_short_code:
+                    generated_short = generate_short_code(stored_hash)
+                    if generated_short.upper() == short_code_upper:
+                        return metadata
+            except (json.JSONDecodeError, IOError):
+                continue
+
+    return None
+
+
 def search_partial_hash(partial_hash: str, output_dir: Path, limit: int = 10) -> List[Dict[str, Any]]:
     """
     Search for documents by partial hash match.
@@ -147,9 +233,16 @@ def search_partial_hash(partial_hash: str, output_dir: Path, limit: int = 10) ->
                     metadata = json.load(f)
 
                 stored_hash = metadata.get("hash_info", {}).get("hash_code", "")
-                if partial_upper in stored_hash.upper():
+                # Generate short code if not present
+                short_code = metadata.get("hash_info", {}).get("short_code", "")
+                if not short_code and stored_hash:
+                    short_code = generate_short_code(stored_hash)
+
+                # Check if partial matches full hash or short code
+                if partial_upper in stored_hash.upper() or partial_upper in short_code.upper():
                     results.append({
                         "hash_code": stored_hash,
+                        "short_code": short_code,
                         "document_type": metadata.get("document_info", {}).get("type_display", "Unknown"),
                         "client_name": metadata.get("user_info", {}).get("client_name", "Unknown"),
                         "creation_date": metadata.get("document_info", {}).get("creation_timestamp", "Unknown")
@@ -245,9 +338,16 @@ def get_statistics(output_dir: Path) -> Dict[str, Any]:
                 # Count by user
                 stats["by_user"][user_id] = stats["by_user"].get(user_id, 0) + 1
 
+                # Get or generate short code
+                hash_code = metadata.get("hash_info", {}).get("hash_code", "Unknown")
+                short_code = metadata.get("hash_info", {}).get("short_code", "")
+                if not short_code and hash_code != "Unknown":
+                    short_code = generate_short_code(hash_code)
+
                 # Collect for recent documents
                 all_documents.append({
-                    "hash_code": metadata.get("hash_info", {}).get("hash_code", "Unknown"),
+                    "hash_code": hash_code,
+                    "short_code": short_code,
                     "document_type": doc_type,
                     "client_name": metadata.get("user_info", {}).get("client_name", "Unknown"),
                     "creation_date": metadata.get("document_info", {}).get("creation_timestamp_iso", ""),
@@ -269,23 +369,45 @@ async def verify_hash(hash_code: str):
     """
     Verify a hash code and return document metadata.
 
-    - **hash_code**: The hash code to verify (format: XX-XXXXXXXXXXXX)
+    Supports two formats:
+    - **Full hash**: XX-XXXXXXXXXXXX (e.g., CM-A1B2C3D4E5F6)
+    - **Short code (codigo comprimido)**: 6 alphanumeric characters (e.g., ABCD12)
     """
-    # Validate format
-    if not validate_hash_format(hash_code):
+    code_upper = hash_code.strip().upper()
+    metadata = None
+    code_type = "full"
+
+    # Check if it's a full hash format
+    if validate_hash_format(code_upper):
+        metadata = search_by_hash(code_upper, OUTPUT_DIR)
+        code_type = "full"
+    # Check if it's a short code format
+    elif validate_short_code_format(code_upper):
+        metadata = search_by_short_code(code_upper, OUTPUT_DIR)
+        code_type = "short"
+    else:
         raise HTTPException(
             status_code=400,
-            detail="Invalid hash code format. Expected format: XX-XXXXXXXXXXXX (e.g., CM-A1B2C3D4E5F6)"
+            detail="Invalid code format. Expected formats: XX-XXXXXXXXXXXX (full hash) or XXXXXX (6-character short code)"
         )
-
-    # Search for metadata
-    metadata = search_by_hash(hash_code, OUTPUT_DIR)
 
     if not metadata:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Hash code '{hash_code.upper()}' not found in database"
-        )
+        if code_type == "short":
+            raise HTTPException(
+                status_code=404,
+                detail=f"Short code '{code_upper}' not found in database"
+            )
+        else:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Hash code '{code_upper}' not found in database"
+            )
+
+    # Add short_code to response if not already present
+    if "hash_info" in metadata and "short_code" not in metadata["hash_info"]:
+        full_hash = metadata["hash_info"].get("hash_code", "")
+        if full_hash:
+            metadata["hash_info"]["short_code"] = generate_short_code(full_hash)
 
     return VerificationResult(
         success=True,
@@ -296,20 +418,25 @@ async def verify_hash(hash_code: str):
 
 @app.post("/api/verify/integrity", response_model=IntegrityResult)
 async def verify_integrity(
-    hash_code: str = Query(..., description="The hash code to verify"),
+    hash_code: str = Query(..., description="The hash code or short code to verify"),
     file: UploadFile = File(..., description="PDF file to verify")
 ):
     """
     Verify document integrity by comparing uploaded PDF hash with stored hash.
 
-    - **hash_code**: The hash code to verify
+    Supports two formats:
+    - **Full hash**: XX-XXXXXXXXXXXX (e.g., CM-A1B2C3D4E5F6)
+    - **Short code (codigo comprimido)**: 6 alphanumeric characters (e.g., ABCD12)
+
     - **file**: The PDF file to verify
     """
-    # Validate format
-    if not validate_hash_format(hash_code):
+    code_upper = hash_code.strip().upper()
+
+    # Validate format (accept both full hash and short code)
+    if not validate_hash_format(code_upper) and not validate_short_code_format(code_upper):
         raise HTTPException(
             status_code=400,
-            detail="Invalid hash code format"
+            detail="Invalid code format. Expected formats: XX-XXXXXXXXXXXX (full hash) or XXXXXX (6-character short code)"
         )
 
     # Read file content
@@ -321,10 +448,35 @@ async def verify_integrity(
             detail="Empty file provided"
         )
 
-    # Verify integrity
-    result = verify_document_integrity(hash_code, content, OUTPUT_DIR)
+    # Find the metadata first (using either format)
+    if validate_hash_format(code_upper):
+        metadata = search_by_hash(code_upper, OUTPUT_DIR)
+    else:
+        metadata = search_by_short_code(code_upper, OUTPUT_DIR)
 
-    return IntegrityResult(**result)
+    if not metadata:
+        return IntegrityResult(
+            valid=False,
+            hash_code=code_upper,
+            message="Code not found in database"
+        )
+
+    # Get the full hash code for the result
+    full_hash_code = metadata.get("hash_info", {}).get("hash_code", code_upper)
+
+    # Calculate hash of provided PDF
+    calculated_hash = hashlib.sha256(content).hexdigest()
+    stored_hash = metadata.get("hash_info", {}).get("content_hash", "")
+
+    is_valid = calculated_hash.lower() == stored_hash.lower()
+
+    return IntegrityResult(
+        valid=is_valid,
+        hash_code=full_hash_code,
+        calculated_hash=calculated_hash,
+        stored_hash=stored_hash,
+        message="Document is authentic and unmodified" if is_valid else "Document has been modified or is not authentic"
+    )
 
 
 @app.get("/api/search")
