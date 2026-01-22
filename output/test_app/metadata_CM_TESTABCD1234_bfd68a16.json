@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "trace_id": "bfd68a16-c6a2-4f67-9cd7-31f4ee2a0eeb",
+  "hash_info": {
+    "hash_code": "CM-TESTABCD1234",
+    "short_code": "TSAC13",
+    "algorithm": "SHA-256",
+    "content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "metadata_hash": "",
+    "combined_hash": "",
+    "file_size": 0
+  },
+  "document_info": {
+    "type": "carta_manifestacion",
+    "type_display": "Carta de Manifestacion",
+    "file_name": "test_document.pdf",
+    "creation_timestamp": "22/01/2026 18:25:00",
+    "creation_timestamp_iso": "2026-01-22T18:25:00.000000"
+  },
+  "user_info": {
+    "user_id": "test_app",
+    "client_name": "Test Client Corp"
+  },
+  "form_data": {
+    "custom_field": "custom_value"
+  }
+}

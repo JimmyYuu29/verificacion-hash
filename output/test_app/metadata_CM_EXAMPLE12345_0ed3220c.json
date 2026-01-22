@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "trace_id": "0ed3220c-074e-4455-a29c-677079e4b15a",
+  "hash_info": {
+    "hash_code": "CM-EXAMPLE12345",
+    "short_code": "EAPE24",
+    "algorithm": "SHA-256",
+    "content_hash": "abc123def456",
+    "metadata_hash": "",
+    "combined_hash": "",
+    "file_size": 0
+  },
+  "document_info": {
+    "type": "carta_manifestacion",
+    "type_display": "Carta de Manifestacion",
+    "file_name": "test_document.pdf",
+    "creation_timestamp": "22/01/2026 18:30:23",
+    "creation_timestamp_iso": "2026-01-22T18:30:23.052485"
+  },
+  "user_info": {
+    "user_id": "test_app",
+    "client_name": "Test Client"
+  },
+  "form_data": {}
+}

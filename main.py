@@ -72,6 +72,44 @@ class StatsResult(BaseModel):
     recent_documents: List[Dict[str, Any]]
 
 
+class HashInfoInput(BaseModel):
+    hash_code: str
+    short_code: Optional[str] = None
+    algorithm: Optional[str] = "SHA-256"
+    content_hash: Optional[str] = None
+    metadata_hash: Optional[str] = None
+    combined_hash: Optional[str] = None
+    file_size: Optional[int] = None
+
+
+class DocumentInfoInput(BaseModel):
+    type: Optional[str] = None
+    type_display: Optional[str] = None
+    file_name: Optional[str] = None
+    creation_timestamp: Optional[str] = None
+    creation_timestamp_iso: Optional[str] = None
+
+
+class UserInfoInput(BaseModel):
+    user_id: str
+    client_name: Optional[str] = None
+
+
+class DocumentRegistration(BaseModel):
+    version: Optional[str] = "1.0"
+    trace_id: Optional[str] = None
+    hash_info: HashInfoInput
+    document_info: Optional[DocumentInfoInput] = None
+    user_info: UserInfoInput
+    form_data: Optional[Dict[str, Any]] = None
+
+
+class RegistrationResult(BaseModel):
+    success: bool
+    message: str
+    path: Optional[str] = None
+
+
 # Core functions
 def validate_hash_format(hash_code: str) -> bool:
     """Validate full hash code format (XX-XXXXXXXXXXXX)."""
@@ -516,6 +554,119 @@ async def get_document_types():
         "success": True,
         "types": DOCUMENT_TYPES
     }
+
+
+@app.post("/api/register", response_model=RegistrationResult)
+async def register_document(registration: DocumentRegistration):
+    """
+    Register a new document by saving its metadata to the output directory.
+
+    This endpoint allows remote applications to register verification documents
+    without needing direct file system access.
+
+    - **registration**: JSON body containing document metadata
+    """
+    # Validate hash format
+    hash_code = registration.hash_info.hash_code.strip().upper()
+    if not validate_hash_format(hash_code):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid hash_code format: {hash_code}. Expected format: XX-XXXXXXXXXXXX"
+        )
+
+    user_id = registration.user_info.user_id.strip()
+    if not user_id:
+        raise HTTPException(
+            status_code=400,
+            detail="user_id is required and cannot be empty"
+        )
+
+    # Sanitize user_id for filesystem safety (allow only alphanumeric, underscore, dash)
+    safe_user_id = re.sub(r'[^a-zA-Z0-9_-]', '_', user_id)
+
+    # Create user directory if it doesn't exist
+    user_dir = OUTPUT_DIR / safe_user_id
+    user_dir.mkdir(parents=True, exist_ok=True)
+
+    # Generate short_code if not provided
+    short_code = registration.hash_info.short_code
+    if not short_code:
+        short_code = generate_short_code(hash_code)
+
+    # Generate trace_id if not provided
+    trace_id = registration.trace_id
+    if not trace_id:
+        import uuid
+        trace_id = str(uuid.uuid4())
+
+    # Build the metadata dictionary
+    metadata = {
+        "version": registration.version or "1.0",
+        "trace_id": trace_id,
+        "hash_info": {
+            "hash_code": hash_code,
+            "short_code": short_code,
+            "algorithm": registration.hash_info.algorithm or "SHA-256",
+            "content_hash": registration.hash_info.content_hash or "",
+            "metadata_hash": registration.hash_info.metadata_hash or "",
+            "combined_hash": registration.hash_info.combined_hash or "",
+            "file_size": registration.hash_info.file_size or 0
+        },
+        "document_info": {},
+        "user_info": {
+            "user_id": safe_user_id,
+            "client_name": registration.user_info.client_name or ""
+        },
+        "form_data": registration.form_data or {}
+    }
+
+    # Add document_info if provided
+    if registration.document_info:
+        metadata["document_info"] = {
+            "type": registration.document_info.type or "",
+            "type_display": registration.document_info.type_display or "",
+            "file_name": registration.document_info.file_name or "",
+            "creation_timestamp": registration.document_info.creation_timestamp or "",
+            "creation_timestamp_iso": registration.document_info.creation_timestamp_iso or datetime.now().isoformat()
+        }
+    else:
+        metadata["document_info"] = {
+            "type": "",
+            "type_display": "",
+            "file_name": "",
+            "creation_timestamp": "",
+            "creation_timestamp_iso": datetime.now().isoformat()
+        }
+
+    # Generate filename
+    safe_hash = hash_code.replace("-", "_")
+    filename = f"metadata_{safe_hash}_{trace_id[:8]}.json"
+    file_path = user_dir / filename
+
+    # Check if file already exists (optional: could allow overwrite)
+    if file_path.exists():
+        raise HTTPException(
+            status_code=409,
+            detail=f"Document with hash {hash_code} already registered for user {safe_user_id}"
+        )
+
+    # Write the metadata file
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(metadata, f, ensure_ascii=False, indent=2)
+    except IOError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to write metadata file: {str(e)}"
+        )
+
+    relative_path = str(file_path.relative_to(Path(".")))
+
+    return RegistrationResult(
+        success=True,
+        message="Document registered successfully",
+        path=relative_path
+    )
 
 
 # Serve static files and HTML frontend
